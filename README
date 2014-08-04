@@ -1,0 +1,6 @@
+== Lua interface to libnpf ===
+
+This is an initial crack at a Lua interface to NPF, NetBSD's packet filter.
+
+It's released under a 2-clause BSD-style license. See the LICENSE file for
+details.
