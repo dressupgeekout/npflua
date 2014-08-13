@@ -60,59 +60,59 @@ static int
 lua_npf_stats(lua_State *L)
 {
   int fd;
-	static const struct stats_s {
-		/* Note: -1 indicates a new section. */
-		int		index;
-		const char *	name;
-	} stats[] = {
-		{ NPF_STAT_PASS_DEFAULT, "default_pass" },
-		{ NPF_STAT_PASS_RULESET, "ruleset_pass" },
-		{ NPF_STAT_PASS_CONN, "state_pass" },
-		{ NPF_STAT_BLOCK_DEFAULT, "default_block" },
-		{ NPF_STAT_BLOCK_RULESET, "ruleset_block" },
-		{ NPF_STAT_CONN_CREATE, "state_allocations" },
-		{ NPF_STAT_CONN_DESTROY, "state_destructions" },
-		{ NPF_STAT_NAT_CREATE, "nat_entry_allocations" },
-		{ NPF_STAT_NAT_DESTROY, "nat_entry_destructions" },
-		{ NPF_STAT_NBUF_NONCONTIG, "noncontiguous_cases" },
-		{ NPF_STAT_NBUF_CONTIG_FAIL, "contig_alloc_failures" },
-		{ NPF_STAT_INVALID_STATE, "cases_in_total" },
-		{ NPF_STAT_INVALID_STATE_TCP1, "tcp_case_I" },
-		{ NPF_STAT_INVALID_STATE_TCP2, "tcp_case_II" },
-		{ NPF_STAT_INVALID_STATE_TCP3, "tcp_case_III" },
-		{ NPF_STAT_RACE_NAT, "nat_association_race"	},
-		{ NPF_STAT_RACE_CONN, "duplicate_state_race" },
-		{ NPF_STAT_FRAGMENTS, "fragments" },
-		{ NPF_STAT_REASSEMBLY, "reassembled" },
-		{ NPF_STAT_REASSFAIL, "failed_reassembly" },
-		{ NPF_STAT_ERROR, "unexpected_errors" }
-	};
+  static const struct stats_s {
+    /* Note: -1 indicates a new section. */
+    int		index;
+    const char *	name;
+  } stats[] = {
+    { NPF_STAT_PASS_DEFAULT, "default_pass" },
+    { NPF_STAT_PASS_RULESET, "ruleset_pass" },
+    { NPF_STAT_PASS_CONN, "state_pass" },
+    { NPF_STAT_BLOCK_DEFAULT, "default_block" },
+    { NPF_STAT_BLOCK_RULESET, "ruleset_block" },
+    { NPF_STAT_CONN_CREATE, "state_allocations" },
+    { NPF_STAT_CONN_DESTROY, "state_destructions" },
+    { NPF_STAT_NAT_CREATE, "nat_entry_allocations" },
+    { NPF_STAT_NAT_DESTROY, "nat_entry_destructions" },
+    { NPF_STAT_NBUF_NONCONTIG, "noncontiguous_cases" },
+    { NPF_STAT_NBUF_CONTIG_FAIL, "contig_alloc_failures" },
+    { NPF_STAT_INVALID_STATE, "cases_in_total" },
+    { NPF_STAT_INVALID_STATE_TCP1, "tcp_case_I" },
+    { NPF_STAT_INVALID_STATE_TCP2, "tcp_case_II" },
+    { NPF_STAT_INVALID_STATE_TCP3, "tcp_case_III" },
+    { NPF_STAT_RACE_NAT, "nat_association_race"	},
+    { NPF_STAT_RACE_CONN, "duplicate_state_race" },
+    { NPF_STAT_FRAGMENTS, "fragments" },
+    { NPF_STAT_REASSEMBLY, "reassembled" },
+    { NPF_STAT_REASSFAIL, "failed_reassembly" },
+    { NPF_STAT_ERROR, "unexpected_errors" }
+  };
 
   fd = open("/dev/npf", O_RDONLY);
 
-	uint64_t *st = calloc(1, NPF_STATS_SIZE);
+  uint64_t *st = calloc(1, NPF_STATS_SIZE);
 
-	if (ioctl(fd, IOC_NPF_STATS, &st) != 0) {
+  if (ioctl(fd, IOC_NPF_STATS, &st) != 0) {
     close(fd);
     free(st);
     luaL_error(L, "ioctl(IOC_NPF_STATS) failed");
-	}
+  }
 
   lua_newtable(L);
 
-	for (unsigned i = 0; i < __arraycount(stats); i++) {
-		const char *sname = stats[i].name;
-		int sidx = stats[i].index;
+  for (unsigned i = 0; i < __arraycount(stats); i++) {
+    const char *sname = stats[i].name;
+    int sidx = stats[i].index;
 
     lua_pushstring(L, sname);
     lua_pushinteger(L, (lua_Integer)st[sidx]);
     lua_settable(L, -3);
-	}
+  }
 
   close(fd);
-	free(st);
+  free(st);
 
-	return 1;
+  return 1;
 }
 
 /*
