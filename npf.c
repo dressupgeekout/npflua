@@ -10,12 +10,6 @@
  *  - The stats names need to be cleaned up.
  */
 
-
-/*
- * conf = npf.create_config()
- * conf:rule_exists()
- */
-
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,6 +22,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+
+#define NPF_DEV_PATH  "/dev/npf"
 
 typedef struct _lnpfconf
 {
@@ -88,7 +84,9 @@ lua_npf_stats(lua_State *L)
     { NPF_STAT_ERROR, "unexpected_errors" }
   };
 
-  fd = open("/dev/npf", O_RDONLY);
+  if ((fd = open(NPF_DEV_PATH, O_RDONLY)) == -1) {
+    luaL_error(L, "open(" NPF_DEV_PATH ") failed");
+  }
 
   uint64_t *st = calloc(1, NPF_STATS_SIZE);
 
@@ -171,9 +169,9 @@ lua_npf_config_submit(lua_State *L)
   lconf = luaL_checkudata(L, 1, "nl_config_t");
 
   if (lconf->fd == -1) {
-    lconf->fd = open("/dev/npf", O_RDONLY);
+    lconf->fd = open(NPF_DEV_PATH, O_RDONLY);
     if (lconf->fd == -1) {
-      luaL_error(L, "open(/dev/npf) failed");
+      luaL_error(L, "open(" NPF_DEV_PATH ") failed");
     }
   }
   status = npf_config_submit(lconf->conf, lconf->fd);
@@ -193,9 +191,9 @@ lua_npf_config_flush(lua_State *L)
 
   lconf = luaL_checkudata(L, 1, "nl_config_t");
   if (lconf->fd == -1) {
-    lconf->fd = open("/dev/npf", O_RDONLY);
+    lconf->fd = open(NPF_DEV_PATH, O_RDONLY);
     if (lconf->fd == -1) {
-      luaL_error(L, "open(/dev/npf) failed");
+      luaL_error(L, "open(" NPF_DEV_PATH ") failed");
     }
   }
 
@@ -234,8 +232,32 @@ lua_npf_rule_create(lua_State *L)
 }
 
 static int
+lua_npf_rule_destroy(lua_State *L)
+{
+  lnpfrule_t *lrule;
+
+  lrule = luaL_checkudata(L, 2, "nl_rule_t");
+  if (lrule->rule != NULL) {
+    npf_rule_destroy(lrule->rule);
+    lrule->rule = NULL;
+  }
+  return 0;
+}
+
+static int
 lua_npf_rule_setcode(lua_State *L)
 {
+  lnpfrule_t *lrule;
+  const void *code;
+  size_t codelen;
+  int type;
+
+  lrule = luaL_checkudata(L, 1, "nl_rule_t");
+  type = (int)luaL_checkinteger(L, 2);
+  code = luaL_checklstring(L, 3, &codelen);
+
+  npf_rule_setcode(lrule->rule, type, code, codelen);
+
   return 0;
 }
 
@@ -448,9 +470,17 @@ static const struct luaL_Reg conf_m[] = {
 
 const static luaL_Reg npf_rule_funcs[] = {
   {"create", lua_npf_rule_create},
+  {"destroy", lua_npf_rule_destroy},
   {"setcode", lua_npf_rule_setcode},
   {"exists", lua_npf_rule_exists_p}, /* notice no "_p" */
   {"insert", lua_npf_rule_insert},
+  {NULL, NULL}
+};
+
+static const struct luaL_Reg rule_m[] = {
+  {"destroy", lua_npf_rule_destroy},
+  {"setcode", lua_npf_rule_setcode},
+  {"__gc", lua_npf_rule_destroy},
   {NULL, NULL}
 };
 
@@ -524,6 +554,9 @@ luaopen_npf(lua_State *L)
   lua_pop(L, 1);
 
   luaL_newmetatable(L, "nl_rule_t");
+  luaL_setfuncs(L, rule_m, 0);
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
 
   luaL_newmetatable(L, "nl_table_t");
