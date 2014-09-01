@@ -85,7 +85,7 @@ lua_npf_stats(lua_State *L)
   };
 
   if ((fd = open(NPF_DEV_PATH, O_RDONLY)) == -1) {
-    luaL_error(L, "open(" NPF_DEV_PATH ") failed");
+    luaL_error(L, "open(\"%s\") failed", NPF_DEV_PATH);
   }
 
   uint64_t *st = calloc(1, NPF_STATS_SIZE);
@@ -171,7 +171,7 @@ lua_npf_config_submit(lua_State *L)
   if (lconf->fd == -1) {
     lconf->fd = open(NPF_DEV_PATH, O_RDONLY);
     if (lconf->fd == -1) {
-      luaL_error(L, "open(" NPF_DEV_PATH ") failed");
+      luaL_error(L, "open(\"%s\") failed", NPF_DEV_PATH);
     }
   }
   status = npf_config_submit(lconf->conf, lconf->fd);
@@ -193,7 +193,7 @@ lua_npf_config_flush(lua_State *L)
   if (lconf->fd == -1) {
     lconf->fd = open(NPF_DEV_PATH, O_RDONLY);
     if (lconf->fd == -1) {
-      luaL_error(L, "open(" NPF_DEV_PATH ") failed");
+      luaL_error(L, "open(\"%s\") failed", NPF_DEV_PATH);
     }
   }
 
