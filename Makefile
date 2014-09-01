@@ -1,13 +1,14 @@
 .PHONY: clean all
 .SUFFIXES: .so .c
 
-CC = gcc -Wall
+CC ?= gcc
+CFLAGS = -fPIC -Weverything -Wno-padded -Wno-unused-parameter -Werror
 LIBS = -lm -llua -lnpf
 
 all: npf.so
 
 .c.so:
-	$(CC) -shared -o $(.TARGET) $(.ALLSRC) $(LIBS)
+	$(CC) $(CFLAGS) -shared -o $(.TARGET) $(.ALLSRC) $(LIBS)
 
 clean:
-	rm -f *.o *.so *.core 
+	rm -f *.o *.so *.core
