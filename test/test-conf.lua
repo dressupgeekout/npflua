@@ -1,4 +1,4 @@
-package.cpath = "./?.so"
+package.cpath = "../?.so"
 
 local npf = require("npf")
 
