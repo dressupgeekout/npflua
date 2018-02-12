@@ -1,6 +1,6 @@
 /*
  * npf.c -- Configure NetBSD's packet filter from a Lua script
- * Christian Koch <cfkoch@sdf.lonestar.org>
+ * Charlotte Koch <cfkoch@edgebsd.org>
  * Jan Danielsson <jan.m.danielsson@gmail.com>
  *
  * TODO
