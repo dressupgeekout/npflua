@@ -2,7 +2,7 @@
 .SUFFIXES: .so .c
 
 CC ?= gcc
-CFLAGS = -fPIC -Weverything -Wno-padded -Wno-unused-parameter -Werror
+CFLAGS = -fPIC -std=c99
 LIBS = -lm -llua -lnpf
 
 all: npf.so
